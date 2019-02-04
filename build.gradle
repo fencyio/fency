@@ -1,0 +1,124 @@
+import com.github.spotbugs.SpotBugsTask
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
+apply from: "${rootDir}/libraries.gradle"
+group 'io.fency'
+
+buildscript {
+  ext {
+    springBootVersion = '2.1.3.RELEASE'
+    spotbugsVersion = '1.6.9'
+    releasePluginVersion = '1.10.0'
+  }
+
+  repositories {
+    mavenCentral()
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+    maven(){
+      url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
+  }
+
+  dependencies {
+    classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+    classpath "gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:${spotbugsVersion}"
+    classpath "pl.allegro.tech.build:axion-release-plugin:${releasePluginVersion}"
+  }
+}
+
+apply plugin: 'pl.allegro.tech.build.axion-release'
+
+allprojects {
+  project.version = scmVersion.version
+}
+
+subprojects {
+  
+  repositories {
+    mavenCentral()
+    maven(){
+      url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
+  }
+  
+  apply plugin: 'java'
+  apply plugin: 'idea'
+  apply plugin: 'io.spring.dependency-management'
+  apply plugin: 'jacoco'
+  apply plugin: 'com.github.spotbugs'
+  apply plugin: 'signing'
+  apply plugin: 'maven-publish'
+ 
+  apply from: "${rootDir}/publishing.gradle"
+
+  dependencyManagement {
+    imports {
+      mavenBom SpringBootPlugin.BOM_COORDINATES
+    }
+  }
+
+  tasks.withType(JavaCompile) {
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
+    options.deprecation = true
+    options.encoding = 'UTF-8'
+  }
+  
+  spotbugs {
+    sourceSets = [sourceSets.main]
+    ignoreFailures = false
+    reportsDir = file("${buildDir}/reports/findbugsReports")
+    effort = "max"
+    reportLevel = "high"
+  }
+  tasks.withType(SpotBugsTask) {
+    reports {
+      html.enabled = true
+      xml.enabled = false
+    }
+  }
+
+  jacoco {
+  }
+
+  jacocoTestReport {
+    executionData fileTree(project.rootDir.absolutePath).include("${buildDir}/jacoco/*.exec")
+    reports {
+      xml.enabled = true
+      csv.enabled = false
+      html.destination file("${buildDir}/reports/jacoco/coverage.html")
+      xml.destination file("${buildDir}/reports/jacoco/coverage.xml")
+    }
+
+    afterEvaluate {
+      classDirectories.from = files(classDirectories.files.collect {
+        fileTree(dir: it, excludes: ['**/*Configuration*'])
+      })
+    }
+
+    dependsOn test
+  }
+
+  check.dependsOn jacocoTestReport
+
+  test {
+    useJUnitPlatform()
+  }
+
+  task integrationTest(type: Test, dependsOn: test) {
+    beforeSuite {descriptor ->
+      if (descriptor.className != null) {
+        logger.lifecycle("Running: " + descriptor.className)
+      }
+    }
+
+    include '**/**/*ItTest'
+
+    reports {
+      html.destination = file("$buildDir/reports/integrationTests")
+    }
+  }
+  check.dependsOn integrationTest
+}

@@ -1,0 +1,22 @@
+group 'io.fency'
+dependencies {
+  compile project(':fency-core')
+  implementation project(':fency-redis')
+
+  implementation libraries.jacksonDataBind
+  implementation libraries.springBootStarterJson
+  implementation libraries.springTx
+  implementation libraries.springBootAutoConfigure
+  implementation libraries.springDataRedis
+  implementation libraries.lombok
+
+  annotationProcessor libraries.lombok
+  annotationProcessor libraries.springBootConfigurationProcessor
+
+  testImplementation libraries.springBootTest
+  testImplementation libraries.junitJupiterApi
+  testImplementation libraries.junitJupiterParams
+  testImplementation libraries.junitJupiterEngine
+}
+
+compileJava.dependsOn(processResources)

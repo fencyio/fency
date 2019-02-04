@@ -1,0 +1,112 @@
+import java.text.SimpleDateFormat
+
+Date buildTimeAndDate = new Date()
+ext {
+  buildDate = new SimpleDateFormat('yyyy-MM-dd').format(buildTimeAndDate)
+  buildTime = new SimpleDateFormat('HH:mm:ss.SSSZ').format(buildTimeAndDate)
+}
+
+def projectArtifactId = 'fency'
+def isReleaseVersion = !version.endsWith("SNAPSHOT")
+
+jar {
+  manifest {
+    attributes(
+        'Built-By': 'Gilles Robert',
+        'Created-By': System.properties['java.version'] + " (" + System.properties['java.vendor'] + " " +
+                      System.properties['java.vm.version'] + ")",
+        'Build-Date': project.buildDate,
+        'Build-Time': project.buildTime,
+        'Specification-Title': projectArtifactId,
+        'Specification-Version': project.version,
+        'Implementation-Title': projectArtifactId,
+        'Implementation-Version': project.version
+    )
+  }
+}
+
+task sourcesJar(type: Jar) {
+  from sourceSets.main.allSource
+  archiveClassifier = 'sources'
+}
+
+task javadocJar(type: Jar) {
+  from javadoc
+  archiveClassifier = 'javadoc'
+}
+
+artifacts {
+  archives jar
+  archives sourcesJar
+  archives javadocJar
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      from components.java
+      artifact sourcesJar
+      artifact javadocJar
+      versionMapping {
+        usage('java-api') {
+          fromResolutionOf('runtimeClasspath')
+        }
+        usage('java-runtime') {
+          fromResolutionResult()
+        }
+      }
+      pom {
+        name = 'Fency'
+        description = 'Provides an idempotency barrier for RabbitMQ consumers.'
+        url = 'https://github.com/ask4gilles/fency'
+        licenses {
+          license {
+            name = 'The Apache License, Version 2.0'
+            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          }
+        }
+        developers {
+          developer {
+            id = 'ask4gilles'
+            name = 'Gilles Robert'
+            email = 'ask4gilles@gmail.com'
+          }
+        }
+        scm {
+          connection = 'scm:git:https://github.com/ask4gilles/fency.git'
+          developerConnection = 'scm:git:https://github.com/ask4gilles/fency.git'
+          url = 'https://github.com/ask4gilles/fency'
+        }
+      }
+    }
+  }
+
+  repositories {
+    maven {
+      def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+      def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+      url = isReleaseVersion ? releasesRepoUrl : snapshotsRepoUrl
+      credentials {
+        username = System.getenv('SONATYPE_USERNAME')
+        password = System.getenv('SONATYPE_PASSWORD')
+      }
+    }
+  }
+
+  gradle.taskGraph.whenReady {
+    taskGraph ->
+      if (taskGraph.allTasks.any {it instanceof Sign}) {
+        allprojects {ext."signing.keyId" = "1C1CBBC4"}
+        allprojects {ext."signing.secretKeyRingFile" = "/home/travis/.gnupg/secring.gpg"}
+        allprojects {ext."signing.password" = System.getenv('PASSPHRASE')}
+      }
+  }
+
+  signing {
+    sign publishing.publications.mavenJava
+  }
+
+  tasks.withType(Sign) {
+    onlyIf { isReleaseVersion }
+  }
+}

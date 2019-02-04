@@ -1,0 +1,36 @@
+ext {
+  awaitilityVersion = '3.1.6'
+  postgresDriverVersion = '42.2.5'
+  testContainersVersion = '1.10.6'
+
+  //noinspection GroovyAssignabilityCheck
+  libraries = [
+      aspectjweaver          : "org.aspectj:aspectjweaver",
+      jacksonDataBind        : "com.fasterxml.jackson.core:jackson-databind",
+      lettuce                : "io.lettuce:lettuce-core",
+      lombok                 : "org.projectlombok:lombok",
+      springBoot             : "org.springframework.boot:spring-boot",
+      springBootAutoConfigure: "org.springframework.boot:spring-boot-autoconfigure",
+      springBootConfigurationProcessor: "org.springframework.boot:spring-boot-configuration-processor",
+      springBootStarter      : "org.springframework.boot:spring-boot-starter",
+      springBootStarterAmqp  : "org.springframework.boot:spring-boot-starter-amqp",
+      springBootStarterJdbc  : "org.springframework.boot:spring-boot-starter-jdbc",
+      springBootStarterJson  : "org.springframework.boot:spring-boot-starter-json",
+      springDataRedis        : "org.springframework.boot:spring-boot-starter-data-redis",
+      springTx               : "org.springframework:spring-tx",
+      
+      // test libraries
+      awaitility             : "org.awaitility:awaitility:${awaitilityVersion}",
+      hikariCP               : "com.zaxxer:HikariCP",
+      junitJupiterApi        : "org.junit.jupiter:junit-jupiter-api",
+      junitJupiterParams     : "org.junit.jupiter:junit-jupiter-params",
+      junitJupiterEngine     : "org.junit.jupiter:junit-jupiter-engine",
+      mockitoCore            : "org.mockito:mockito-core",
+      mockitoJunitJupiter    : "org.mockito:mockito-junit-jupiter",
+      postgresJdbc           : "org.postgresql:postgresql:${postgresDriverVersion}",
+      springBootTest         : "org.springframework.boot:spring-boot-starter-test",
+      testContainers         : "org.testcontainers:junit-jupiter:${testContainersVersion}",
+      testContainersPostgres : "org.testcontainers:postgresql:${testContainersVersion}",
+  ]
+  
+}

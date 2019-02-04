@@ -1,0 +1,26 @@
+language: java
+jdk:
+- openjdk8
+sudo: required
+services:
+- docker
+- rabbitmq
+- redis
+script:
+- "./gradlew build"
+before_install:
+- openssl aes-256-cbc -K $encrypted_0346ac5477eb_key -iv $encrypted_0346ac5477eb_iv
+  -in travis/signingkey.asc.enc -out travis/signingkey.asc -d
+after_success:
+- bash <(curl -s https://codecov.io/bash)
+- gpg2 --version
+- gpg2 --keyring=$TRAVIS_BUILD_DIR/pubring.gpg --no-default-keyring --import travis/signingkey.asc
+- gpg2 --allow-secret-key-import --keyring=$TRAVIS_BUILD_DIR/secring.gpg --no-default-keyring
+  --import travis/signingkey.asc --export-secret-keys > ~/.gnupg/secring.gpg
+- "./gradlew publish"
+env:
+  global:
+  - secure: TO5fUf84CXnxaswzG2SOWcm2UaS14JYkx0Qy0viEzM9uR4ObtWbxKYPXEbepdy/BMyE56M2XuhrtZZA7BX/epXmMEknsN0Ef2s7zeKtSCStrtHfpk4Nx21V37/D/I0hUo1wI1Zzc51g9+jesnhr4lXymr/NG/uPGwRb8pbd8nVBWyZYekrXLEN2cAqRMDRKfZ3S629pj2Vb0SWZL7Zr2gNzfqTUQoqHtYqArJza32NrEaf4NVXgstSMuw5f6lpUgJVoUlD4NYthT/FJrrRYT7+aAlsq6JH1OT3lqwE7wxNzANkPmFounD8OIa31eQ0nle6sT1fTpjXw1hpJXkoay9LrelyYAuZeCPaCJVHLkF7SaJuXgv6MzfhTuesLl0U7QG5dhDvFSF70rTpFMPMOj8DEeAIGY47a35riVOMoRw93O7D4hcg7+t6j9GUVgjdpEQeJczvDgDkMU+jW8YidzorYxdBntH0oVuYS5e40BCMawuNVfobbSwzx/dYme0xhwfIh94SfC2G9COa1DFufpO/4RwL/rvwtb5oyGYc2iajISbnxJ7TwFjgczxW0FASwZ4PkXMsxUTQBP+w+Vasv3UtMr9NaPDRrBtEuIbSVF5c2ROUEv1VSK7BnR+NCxk3mMJJ6jAzfjaN3iK3euojWtBUMNb+vDHkpYB3FO2Wc/G7g=
+  - secure: diw7HcmceM2qsmGcdVr0C3H3tO03o5w/9cTDINKbZaQDl8K05NpebeS+A81OisD6g7fobCZIB0g7JXKWFGR0RYHvx7AbrDLJdRBCBmb4M/cpq+vHKdLjEQALmJ1y4qe/5ooRo/ksj5shBXHLEN2DryvuN/p/cKzrp3aWbhfPeZndcvL7gh04XUwlawCMOMHRnZzKXXTjknFMxGuNlZehqq2Mz/FB8TpyDoyn383bMJqn2uz91e9b5E6GIRiKJhm9tDzxHusflWJbwF1/61p2Vx7+u6kg7tuQ5D7++VJaGmAFBDvl9b4eg14vLC4StT2qCGxe6QuG7SMjyRF9aUuvbsTEv+XZ0rLBYNkIp7Int8I/LjRGgE0GQ5riSbUTwyANdTzF3h351H42HvGF1T+XbQ/+z8YtayEXcRANWeMr6tsvxYxL2SEDgAID36dHc1KktMByjECWgk2NIrxFvDkmxV1P7NCp1TXK6lIxOB+ghRL1wZ+L8tdS+Gchu9MnGQACZ57RurIVIGLKeqe2Nsyi/G+zd6HrJnQSE9m71OUBmPY5eWmnY4SYiPY5UjZwy/EUbY6HkTNA2kQVBkzvxWGFb2WJwm4dcSQ7vZqcaoyI2EvIQnn+oAy9wlbEG99t7BVEQdhBYzNFJyF3juJGFUrAoLxS3DBU6VZoqaYFp/CM4vg=
+  - secure: crDO65e1JSpdPDhwwEoMY0ZWiiFn4iYNdmMWYhVRTc9VL+GvJJSJQTO6DhOqPpQhi92x030psnU5fCyCCQjYf9LovM40md2+bUvrd4jGts8KT+1PorDv5t+4lOslExRTkTlLDUHwwelTd26Q+KbbLXFh9jkK9+Y7H/l+wsXmCdlf1kc9J7awiWe7NElPL5nwPyf/ju2ILtibbcdYuhyg4bLxDu2W+KSH4QepieuK9uDZEu4re12V+fn0K6tZX/YOxWFY2a+6v3H6lqce0m+fB8FTec/G3nMIPbTBSBrFbX0NRcBvG+krl77yZ9sgZtP7rnkX7wvYGbxS9CkIhpEYyKp9F6nxKdQMwPBUYgxBzUtBakiRsYwfILOWCAWcq5tehj1fKRO8NgOWlJfVD02S2JIDzuos9CQT+spqWBLR/Fq9di3nri81qsX4E9A9YR8WuiorhpUHCLJiizBeBFl7TY/IbPrIT/B6kFrZ2AaPM9tlJ1xCTyaWTVNciKIFUFtwWpDk3yiUE/UCWPNBvWUw/oAMEnzthfm35nGp/EqcawX+ree5GFs0sxXwU/Xw2gyuvwnh0sr239o4rZ1y1jAbX21CkMJ+15s2cLMb+Iok3lCY7aund8YlCfCuCNYMc8BLQab2/xCJsZNPxd3LCtkeo4/bMIMcaTN5DahX0Rd9JZ0=
+  - KEY_LOCATION=$TRAVIS_BUILD_DIR/secring.gpg

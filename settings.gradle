@@ -1,0 +1,7 @@
+rootProject.name='fency'
+include 'fency-core'
+include 'fency-redis'
+include 'fency-test'
+include 'fency-spring-boot-autoconfigure'
+include 'fency-spring-boot-starter-redis'
+include 'fency-spring-boot-sample-app'

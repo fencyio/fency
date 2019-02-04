@@ -1,0 +1,25 @@
+group 'io.fency'
+dependencies {
+  compile libraries.aspectjweaver
+  implementation libraries.springBootStarterAmqp
+  implementation libraries.springBootStarterJson
+  
+  implementation libraries.lombok
+  compile libraries.jacksonDataBind
+
+  annotationProcessor libraries.lombok
+  
+  testImplementation project(':fency-test')
+
+  testImplementation libraries.springBootTest
+  testImplementation libraries.junitJupiterApi
+  testImplementation libraries.junitJupiterParams
+  testImplementation libraries.junitJupiterEngine
+  testImplementation libraries.mockitoCore
+  testImplementation libraries.mockitoJunitJupiter
+  testImplementation libraries.postgresJdbc
+  testImplementation libraries.hikariCP
+  testImplementation libraries.testContainers
+  testImplementation libraries.testContainersPostgres
+  testImplementation libraries.awaitility
+}
