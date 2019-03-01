@@ -38,13 +38,30 @@ If the message already exists, an error message is logged and the target method 
 
 ## Usage
 
-Include dependency:
-
-```text
-'io.fency:fency-spring-boot-starter-redis:+'
+* Maven
+```xml
+<dependency>
+  <groupId>io.fency</groupId>
+  <artifactId>fency-spring-boot-starter-redis</artifactId>
+  <version>0.1.0</version>
+</dependency>
 ```
 
-See sample: fency-spring-boot-sample-app
+* Gradle
+```text
+implementation 'io.fency:fency-spring-boot-starter-redis:+'
+```
+
+Annotate your consumers with @IdempotentConsumer.
+
+See sample app: [fency-spring-boot-sample-app](https://github.com/ask4gilles/fency/tree/master/fency-spring-boot-sample-app)
+
+## Note for spring integration users
+If you are already using spring integration, have a look 
+[here](https://docs.spring.io/spring-integration/docs/current/reference/html/#idempotent-receiver)
+
+## References
+* [Idempotent receiver](https://www.enterpriseintegrationpatterns.com/patterns/messaging/IdempotentReceiver.html)
 
 [ci-img]: https://api.travis-ci.com/ask4gilles/fency.svg?branch=master
 [ci]: https://travis-ci.com/ask4gilles/fency
