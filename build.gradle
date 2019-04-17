@@ -1,13 +1,14 @@
+group 'io.fency'
+
 import com.github.spotbugs.SpotBugsTask
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 apply from: "${rootDir}/libraries.gradle"
-group 'io.fency'
 
 buildscript {
   ext {
-    springBootVersion = '2.1.3.RELEASE'
-    spotbugsVersion = '1.6.9'
+    springBootVersion = '2.1.4.RELEASE'
+    spotbugsVersion = '1.7.1'
     releasePluginVersion = '1.10.0'
   }
 

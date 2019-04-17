@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,22 +18,23 @@ package io.fency;
 import java.util.Optional;
 
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 /**
  * @author Gilles Robert
  */
-public class IdempotencyBarrierTest {
+@ExtendWith(MockitoExtension.class)
+class IdempotencyBarrierTest {
 
   @Mock
   private ContextService mContextService;
@@ -42,15 +43,10 @@ public class IdempotencyBarrierTest {
   @InjectMocks
   private IdempotencyBarrier aspect;
 
-  @BeforeEach
-  public void setUp() {
-    MockitoAnnotations.initMocks(this);
-  }
-
   @Test
-  public void testExecuteWhenNoMessageFound() throws Throwable {
+  void testExecuteWhenNoMessageFound() throws Throwable {
     // given
-    ProceedingJoinPoint mProceedingJoinPoint = Mockito.mock(ProceedingJoinPoint.class);
+    ProceedingJoinPoint mProceedingJoinPoint = mock(ProceedingJoinPoint.class);
     MessageContext messageContext = IdempotencyTestUtils.createIdempotentContext();
     given(mContextService.get()).willReturn(messageContext);
 
@@ -67,9 +63,9 @@ public class IdempotencyBarrierTest {
   }
 
   @Test
-  public void testExecuteWhenMessageFound() throws Throwable {
+  void testExecuteWhenMessageFound() throws Throwable {
     // given
-    ProceedingJoinPoint mProceedingJoinPoint = Mockito.mock(ProceedingJoinPoint.class);
+    ProceedingJoinPoint mProceedingJoinPoint = mock(ProceedingJoinPoint.class);
     MessageContext messageContext = IdempotencyTestUtils.createIdempotentContext();
     Message message = IdempotencyTestUtils.createIdempotentMessage();
     given(mContextService.get()).willReturn(messageContext);

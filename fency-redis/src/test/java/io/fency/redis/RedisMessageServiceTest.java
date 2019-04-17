@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,17 @@ package io.fency.redis;
 
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
 
-import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
 import io.fency.IdempotencyTestUtils;
 import io.fency.Message;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -43,26 +41,21 @@ import static org.mockito.Mockito.verify;
 /**
  * @author Gilles Robert
  */
-public class RedisMessageServiceTest {
+@ExtendWith(MockitoExtension.class)
+class RedisMessageServiceTest {
 
   @Mock
   private RedisTemplate<String, Message> mRedisTemplate;
   @InjectMocks
   private RedisMessageService idempotentMessageService;
 
-  @BeforeEach
-  public void setUp() {
-    MockitoAnnotations.initMocks(this);
-  }
-
   @SuppressWarnings("unchecked")
   @Test
-  public void testSave() {
+  void testSave() {
     // given
     Message message = IdempotencyTestUtils.createIdempotentMessage();
 
     ValueOperations mValueOperations = mock(ValueOperations.class);
-    given(mValueOperations.getOperations()).willReturn(mock(RedisOperations.class));
     given(mRedisTemplate.opsForValue()).willReturn(mValueOperations);
 
     // when
@@ -74,7 +67,7 @@ public class RedisMessageServiceTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testFindByMessageIdAndConsumerQueueName() {
+  void testFindByMessageIdAndConsumerQueueName() {
     // given
     Message expectedMessage = IdempotencyTestUtils.createIdempotentMessage();
     String messageId = expectedMessage.getId();
@@ -95,8 +88,9 @@ public class RedisMessageServiceTest {
     verify(mValueOperations).get(key);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
-  public void testClean() {
+  void testClean() {
     // given
 
     // when
@@ -108,10 +102,6 @@ public class RedisMessageServiceTest {
   }
 
   private String getKey(String messageId, String consumerQueueName) {
-    StringJoiner stringJoiner = new StringJoiner(":");
-    stringJoiner.add("message");
-    stringJoiner.add(messageId);
-    stringJoiner.add(consumerQueueName);
-    return stringJoiner.toString();
+    return String.join(":", "message", messageId, consumerQueueName);
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.rabbit.connection.RabbitConnectionFactoryBean;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
@@ -58,12 +58,12 @@ import static org.awaitility.Awaitility.await;
 @EnableAutoConfiguration
 @SpringBootTest(classes = {RedisAutoConfiguration.class, IdempotencyAutoConfiguration.class,
     IdempotencyMessagingItTest.TestConfig.class}, properties = {
-    "spring.datasource.url=jdbc:tc:postgresql:11-alpine:///foo",
-    "spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver",
-    "spring.datasource.username:foo",
-    "spring.datasource.password:foo",
     "spring.redis.host=localhost",
-    "spring.redis.port=6379"
+    "spring.redis.port=6379",
+    "spring.rabbitmq.addresses=localhost",
+    "spring.rabbitmq.password=guest",
+    "spring.rabbitmq.username=guest",
+    "spring.rabbitmq.port=5672",
 })
 class IdempotencyMessagingItTest {
 
@@ -87,25 +87,25 @@ class IdempotencyMessagingItTest {
   private RedisOperations<String, Message> operations;
 
   @BeforeAll
-  public static void setUp() {
+  static void setUp() {
     REDIS.start();
     RABBIT.start();
   }
 
   @AfterAll
-  public static void close() {
+  static void close() {
     REDIS.stop();
     RABBIT.stop();
   }
 
   @AfterEach
-  public void tearDown() {
+  void tearDown() {
     factory.getConnection().flushDb();
   }
 
   @Test
   @DisplayName("Save and retrieve a message from Redis")
-  public void testSaveAndRetrieveMessage() {
+  void testSaveAndRetrieveMessage() {
     // given
     Message message = IdempotencyTestUtils.createIdempotentMessage();
 
@@ -118,9 +118,9 @@ class IdempotencyMessagingItTest {
 
   @Test
   @DisplayName("Send a new message to RabbitMQ")
-  public void testSendOneMessageToRabbit() { // NOPMD: no assert.
+  void testSendOneMessageToRabbit() { // NOPMD: no assert.
     // given
-    String message = "hello world message!";
+    String message = "one message";
 
     // when
     rabbitTemplate.convertAndSend(message);
@@ -132,10 +132,10 @@ class IdempotencyMessagingItTest {
 
   @Test
   @DisplayName("Send two messages to RabbitMQ")
-  public void testSendTwoMessagesToRabbit() { // NOPMD: no assert.
+  void testSendTwoMessagesToRabbit() { // NOPMD: no assert.
     // given
-    String message1 = "hello world message!";
-    String message2 = "hello world message!";
+    String message1 = "one message of two";
+    String message2 = "second message";
 
     // when
     rabbitTemplate.convertAndSend(message1);
@@ -148,7 +148,7 @@ class IdempotencyMessagingItTest {
 
   @Test
   @DisplayName("Send message and creates and exception")
-  public void testSendMessageWhenException() {
+  void testSendMessageWhenException() {
     // given
     String message = "exception";
 
@@ -173,44 +173,25 @@ class IdempotencyMessagingItTest {
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate(RabbitConnectionFactoryBean rabbitConnectionFactoryBean)
-        throws Exception {
-      final CachingConnectionFactory cachingConnectionFactory =
-          new CachingConnectionFactory(rabbitConnectionFactoryBean.getObject());
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
       SimpleMessageConverter messageConverter = new SimpleMessageConverter();
       messageConverter.setCreateMessageIds(true);
-      RabbitTemplate rabbitTemplate = new RabbitTemplate(cachingConnectionFactory);
+
+      RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
       rabbitTemplate.setExchange("myExchange");
       rabbitTemplate.setMessageConverter(messageConverter);
+
       return rabbitTemplate;
     }
 
     @Bean
-    public RabbitConnectionFactoryBean rabbitConnectionFactoryBean() {
-      RabbitConnectionFactoryBean rabbitConnectionFactoryBean = new RabbitConnectionFactoryBean();
-      rabbitConnectionFactoryBean.setUsername("guest");
-      rabbitConnectionFactoryBean.setPassword("guest");
-      rabbitConnectionFactoryBean.setHost("localhost");
-      rabbitConnectionFactoryBean.setVirtualHost("/");
-      rabbitConnectionFactoryBean.setPort(RABBIT_MQ_PORT);
-      rabbitConnectionFactoryBean.afterPropertiesSet();
-      return rabbitConnectionFactoryBean;
-    }
+    public RabbitAdmin rabbitAdmin(Queue myQueue, ConnectionFactory connectionFactory) {
+      TopicExchange myExchange = new TopicExchange("myExchange", true, false);
 
-    @Bean
-    public CachingConnectionFactory cachingConnectionFactory(
-        RabbitConnectionFactoryBean rabbitConnectionFactoryBean) throws Exception {
-      return new CachingConnectionFactory(rabbitConnectionFactoryBean.getObject());
-    }
-
-    @Bean
-    public RabbitAdmin rabbitAdmin(Queue queue, CachingConnectionFactory cachingConnectionFactory) {
-      final TopicExchange exchange = new TopicExchange("myExchange", true, false);
-
-      final RabbitAdmin admin = new RabbitAdmin(cachingConnectionFactory);
-      admin.declareQueue(queue);
-      admin.declareExchange(exchange);
-      admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with("#"));
+      RabbitAdmin admin = new RabbitAdmin(connectionFactory);
+      admin.declareQueue(myQueue);
+      admin.declareExchange(myExchange);
+      admin.declareBinding(BindingBuilder.bind(myQueue).to(myExchange).with("#"));
 
       return admin;
     }
@@ -222,10 +203,10 @@ class IdempotencyMessagingItTest {
 
     @Bean
     public SimpleMessageListenerContainer messageListenerContainer(
-        CachingConnectionFactory cachingConnectionFactory, Queue queue, MessageListener messageListener,
+        CachingConnectionFactory cachingConnectionFactory, Queue myQueue, MessageListener messageListener,
         TransactionInterceptor interceptor, PlatformTransactionManager transactionManager) {
       SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(cachingConnectionFactory);
-      container.setQueues(queue);
+      container.setQueues(myQueue);
       container.setMessageListener(new MessageListenerAdapter(messageListener));
       container.setAdviceChain(interceptor);
       container.setTransactionManager(transactionManager);

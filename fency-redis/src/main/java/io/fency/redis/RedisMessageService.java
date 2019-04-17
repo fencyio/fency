@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package io.fency.redis;
 
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Redis implementation of {@link MessageService}.
+ *
  * @author Gilles Robert
  */
 @Transactional
@@ -41,19 +41,21 @@ public class RedisMessageService implements MessageService {
 
   /**
    * Save a Message metadata in a data store.
+   *
    * @param message The message to save.
    */
   @Override
   public void save(Message message) {
-        log.debug("Saving metadata for message with id {} and consumer queue name {}", message.getId(),
-            message.getConsumerQueueName());
+    log.debug("Saving metadata for message with id {} and consumer queue name {}", message.getId(),
+        message.getConsumerQueueName());
     String key = getKey(message.getId(), message.getConsumerQueueName());
     redisTemplate.opsForValue().set(key, message);
   }
 
   /**
    * Retrieve a Message metadata in a data store.
-   * @param messageId The message id.
+   *
+   * @param messageId         The message id.
    * @param consumerQueueName The target consumer queue name.
    */
   @Override
@@ -75,10 +77,6 @@ public class RedisMessageService implements MessageService {
   }
 
   private String getKey(String messageId, String consumerQueueName) {
-    StringJoiner stringJoiner = new StringJoiner(":");
-    stringJoiner.add(PREFIX);
-    stringJoiner.add(messageId);
-    stringJoiner.add(consumerQueueName);
-    return stringJoiner.toString();
+    return String.join(":", PREFIX, messageId, consumerQueueName);
   }
 }

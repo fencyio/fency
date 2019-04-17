@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 package io.fency;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
@@ -29,23 +29,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * @author Gilles Robert
  */
-public class ContextServiceTest {
+@ExtendWith(MockitoExtension.class)
+class ContextServiceTest {
 
   @InjectMocks
   private ContextService contextService;
 
-  @BeforeEach
-  public void setUp() {
-    MockitoAnnotations.initMocks(this);
-  }
-
   @AfterEach
-  public void tearDown() {
+  void tearDown() {
     contextService.clear();
   }
 
   @Test
-  public void testGetWhenContextIsNotInitialized() {
+  void testGetWhenContextIsNotInitialized() {
     // given no initialization
 
     // when
@@ -56,7 +52,7 @@ public class ContextServiceTest {
   }
 
   @Test
-  public void testSet() {
+  void testSet() {
     // given no initialization
     MessageContext expectedContext = IdempotencyTestUtils.createIdempotentContext();
 
@@ -69,7 +65,7 @@ public class ContextServiceTest {
   }
 
   @Test
-  public void testClear() {
+  void testClear() {
     // given
 
     // when
@@ -81,14 +77,12 @@ public class ContextServiceTest {
   }
 
   @Test
-  public void testSetWhenNotEmpty() {
+  void testSetWhenNotEmpty() {
     // given no initialization
     MessageContext expectedContext = IdempotencyTestUtils.createIdempotentContext();
     contextService.set(expectedContext);
 
-    // when
+    // when / then
     assertThrows(IllegalArgumentException.class, () -> contextService.set(expectedContext));
-
-    // then exception
   }
 }

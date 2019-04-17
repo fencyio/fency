@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,28 +20,24 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import org.aopalliance.aop.Advice;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Gilles Robert
  */
+@ExtendWith(MockitoExtension.class)
 class RabbitMqBeanPostProcessorTest {
 
   @InjectMocks
   private RabbitMqBeanPostProcessor rabbitMqBeanPostProcessor;
   @Mock
   private MessageInterceptor messageInterceptor;
-
-  @BeforeEach
-  void setUp() {
-    MockitoAnnotations.initMocks(this);
-  }
 
   @Test
   void testPostProcessAfterInitialization() {

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.fency.test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -27,12 +42,12 @@ class IdempotencyAutoConfigurationTest {
       .withConfiguration(AutoConfigurations.of(IdempotencyAutoConfiguration.class, RedisAutoConfiguration.class));
 
   @Test
-  public void testMessageService() {
+  void testMessageService() {
     this.contextRunner.run((context) -> assertThat(context).hasSingleBean(MessageService.class));
   }
 
   @Test
-  public void testPicksUserRedisConnectionFactory() {
+  void testPicksUserRedisConnectionFactory() {
     this.contextRunner.withUserConfiguration(UserConfiguration.class)
         .run((context) -> {
           assertThat(context).hasSingleBean(RedisConnectionFactory.class);
@@ -42,7 +57,7 @@ class IdempotencyAutoConfigurationTest {
   }
 
   @Test
-  public void testUserProvidedCronCleanup() { // NOPMD
+  void testUserProvidedCronCleanup() { // NOPMD
     String cronExpression = "5 * * * * *";
     this.contextRunner.withPropertyValues("idempotency.cleanup-cron=" + cronExpression)
         .run((context) -> {
@@ -52,7 +67,7 @@ class IdempotencyAutoConfigurationTest {
   }
 
   @Test
-  public void testRedisClassNotOnTheClassPath() {
+  void testRedisClassNotOnTheClassPath() {
     this.contextRunner
         .withClassLoader(new FilteredClassLoader(RedisConnectionFactory.class))
         .run((context) -> {
