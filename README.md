@@ -44,7 +44,7 @@ If the message already exists, an error message is logged and the target method 
 <dependency>
   <groupId>io.fency</groupId>
   <artifactId>fency-spring-boot-starter-redis</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
 </dependency>
 ```
 
