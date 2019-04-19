@@ -42,27 +42,41 @@ public class SampleApplicationRunner implements ApplicationRunner {
     this.rabbitTemplate = rabbitTemplate;
   }
 
+  /*
+  Sends messages at application startup: with unique ID's and fixed ID's.
+  - Messages with unique ID's will all be received.
+  - Only the first with fixed ID will be received.
+  */
   @Override
   public void run(ApplicationArguments args) {
-    sendMessageWithUniqueId();
-    sendMessageWithFixedId(); // duplicate
+    for (int i = 1; i <= 5; i++) {
+      String messageWithUniqueId = concat(i, "hello world");
+      sendMessage(messageWithUniqueId);
+
+      Message messageWithFixedId = createMessageWithFixedId(concat(i, "message"));
+      sendMessage(messageWithFixedId); // first will be received, second one will be discarded
+    }
   }
 
-  private void sendMessageWithUniqueId() {
-    rabbitTemplate.convertAndSend("hello world!");
+  private String concat(int i, String message) {
+    return String.join("-", message, String.valueOf(i));
   }
 
-  private void sendMessageWithFixedId() {
-    byte[] body = "message".getBytes(Charset.defaultCharset());
+  private void sendMessage(Object body) {
+    rabbitTemplate.convertAndSend(body);
+  }
+
+  private Message createMessageWithFixedId(String message) {
+    byte[] body = message.getBytes(Charset.defaultCharset());
     MessageProperties properties = new MessageProperties();
     properties.setTimestamp(Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
     properties.setMessageId("12345");
     properties.setConsumerQueue("myQueue");
     properties.setType(String.class.getName());
-    Message message = MessageBuilder.withBody(body)
+    properties.setContentType(MessageProperties.CONTENT_TYPE_TEXT_PLAIN);
+
+    return MessageBuilder.withBody(body)
         .andProperties(properties)
         .build();
-
-    rabbitTemplate.send(message);
   }
 }

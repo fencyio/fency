@@ -43,7 +43,7 @@ class IdempotencyBarrier {
 
   // CHECKSTYLE:OFF throwable for ProceedingJoinPoint
   @Around("@within(io.fency.IdempotentConsumer)")
-  public Object execute(ProceedingJoinPoint pjp) throws Throwable {
+  public synchronized Object execute(ProceedingJoinPoint pjp) throws Throwable {
     Object proceed = null;
     MessageContext context = contextService.get();
 

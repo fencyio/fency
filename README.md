@@ -2,6 +2,7 @@
 [![codecov](https://codecov.io/gh/ask4gilles/fency/branch/master/graph/badge.svg)](https://codecov.io/gh/ask4gilles/fency)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7ee34d1388f549e1ad3298a967f388f0)](https://www.codacy.com/app/ask4gilles/fency?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ask4gilles/fency&amp;utm_campaign=Badge_Grade)
 [![Released Version][maven-img]][maven]
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 # Fency: an idempotency barrier for RabbitMQ consumers
 ## Theoretical concept
 Even when a sender application sends a message only once,

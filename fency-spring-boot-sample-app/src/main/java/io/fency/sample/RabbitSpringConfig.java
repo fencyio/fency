@@ -20,7 +20,7 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.rabbit.transaction.RabbitTransactionManager;
@@ -39,20 +39,15 @@ public class RabbitSpringConfig {
   private static final String EXCHANGE = "myExchange";
 
   @Bean
-  public RabbitTransactionManager transactionManager(CachingConnectionFactory connectionFactory){
+  public RabbitTransactionManager transactionManager(ConnectionFactory connectionFactory){
     return new RabbitTransactionManager(connectionFactory);
   }
 
   @Bean
-  public RabbitTemplate rabbitTemplate(CachingConnectionFactory cachingConnectionFactory) {
+  public SimpleMessageConverter messageConverter() {
     SimpleMessageConverter messageConverter = new SimpleMessageConverter();
     messageConverter.setCreateMessageIds(true); //important
-
-    RabbitTemplate rabbitTemplate = new RabbitTemplate(cachingConnectionFactory);
-    rabbitTemplate.setExchange(EXCHANGE);
-    rabbitTemplate.setMessageConverter(messageConverter);
-
-    return rabbitTemplate;
+    return messageConverter;
   }
 
   @Bean

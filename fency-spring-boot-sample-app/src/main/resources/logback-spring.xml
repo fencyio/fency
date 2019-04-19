@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+
+  <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+  <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+  <logger name="io.fency" level="DEBUG"/>
+  <logger name="io.fency.sample.SampleApplication" level="ERROR"/>
+  <logger name="io.lettuce" level="ERROR"/>
+  <logger name="org.springframework" level="ERROR"/>
+
+  <!-- ==== -->
+  <!-- Root -->
+  <!-- ==== -->
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+  </root>
+
+</configuration>
