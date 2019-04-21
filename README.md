@@ -55,7 +55,7 @@ implementation 'io.fency:fency-spring-boot-starter-redis:+'
 
 Annotate your consumers with @IdempotentConsumer.
 
-See sample app: [fency-spring-boot-sample-app](https://github.com/ask4gilles/fency/tree/master/fency-spring-boot-sample-app)
+See sample app: [fency-spring-boot-sample-app](https://github.com/fencyio/fency/tree/master/fency-spring-boot-sample-app)
 
 ## Note for spring integration users
 If you are already using spring integration, have a look 
@@ -64,7 +64,7 @@ If you are already using spring integration, have a look
 ## References
 * [Idempotent receiver](https://www.enterpriseintegrationpatterns.com/patterns/messaging/IdempotentReceiver.html)
 
-[ci-img]: https://api.travis-ci.com/ask4gilles/fency.svg?branch=master
-[ci]: https://travis-ci.com/ask4gilles/fency
+[ci-img]: https://api.travis-ci.com/fencyio/fency.svg?branch=master
+[ci]: https://travis-ci.com/fencyio/fency
 [maven-img]: https://img.shields.io/maven-central/v/io.fency/fency-core.svg
 [maven]: http://search.maven.org/#search%7Cga%7C1%7Cio.fency
