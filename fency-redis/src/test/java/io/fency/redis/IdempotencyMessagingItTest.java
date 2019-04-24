@@ -29,10 +29,14 @@ import org.springframework.amqp.support.converter.SimpleMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 
@@ -41,13 +45,12 @@ import io.fency.IdempotencyTestUtils;
 import io.fency.Message;
 import io.fency.MessageListener;
 import io.fency.MessageService;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -57,24 +60,20 @@ import static org.awaitility.Awaitility.await;
  */
 @EnableAutoConfiguration
 @SpringBootTest(classes = {RedisAutoConfiguration.class, IdempotencyAutoConfiguration.class,
-    IdempotencyMessagingItTest.TestConfig.class}, properties = {
-    "spring.redis.host=localhost",
-    "spring.redis.port=6379",
-    "spring.rabbitmq.addresses=localhost",
-    "spring.rabbitmq.password=guest",
-    "spring.rabbitmq.username=guest",
-    "spring.rabbitmq.port=5672",
-})
+    IdempotencyMessagingItTest.TestConfig.class})
+@ContextConfiguration(initializers = IdempotencyMessagingItTest.Initializer.class)
+@Testcontainers
 class IdempotencyMessagingItTest {
 
   private static final int RABBIT_MQ_PORT = 5672;
+  private static final int REDIS_PORT = 6379;
 
   @Container
   private static final GenericContainer REDIS = new GenericContainer("redis:3-alpine")
-      .withExposedPorts(6379);
+      .withExposedPorts(REDIS_PORT);
 
   @Container
-  private static final GenericContainer RABBIT = new GenericContainer("rabbitmq:3.5.3")
+  private static final GenericContainer RABBIT = new GenericContainer("rabbitmq:3.5.7")
       .withExposedPorts(RABBIT_MQ_PORT);
 
   @Autowired
@@ -85,18 +84,6 @@ class IdempotencyMessagingItTest {
   private RabbitTemplate rabbitTemplate;
   @Autowired
   private RedisOperations<String, Message> operations;
-
-  @BeforeAll
-  static void setUp() {
-    REDIS.start();
-    RABBIT.start();
-  }
-
-  @AfterAll
-  static void close() {
-    REDIS.stop();
-    RABBIT.stop();
-  }
 
   @AfterEach
   void tearDown() {
@@ -212,6 +199,23 @@ class IdempotencyMessagingItTest {
       container.setTransactionManager(transactionManager);
 
       return container;
+    }
+  }
+
+  public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+    @Override
+    public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+      TestPropertyValues values = TestPropertyValues.of(
+          "spring.rabbitmq.host=" + RABBIT.getContainerIpAddress(),
+          "spring.rabbitmq.port=" + RABBIT.getMappedPort(RABBIT_MQ_PORT),
+          "spring.rabbitmq.user=" + "guest",
+          "spring.rabbitmq.password=" + "guest",
+          "spring.rabbitmq.virtual-host=" + "/",
+          "spring.redis.host=" + REDIS.getContainerIpAddress(),
+          "spring.redis.port=" + REDIS.getMappedPort(REDIS_PORT)
+      );
+      values.applyTo(configurableApplicationContext);
     }
   }
 }

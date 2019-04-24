@@ -4,8 +4,6 @@ jdk:
 sudo: required
 services:
 - docker
-- rabbitmq
-- redis
 script:
 - "./gradlew build"
 before_install:
