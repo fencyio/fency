@@ -9,9 +9,10 @@ dependencies {
   implementation libraries.springTx
   implementation libraries.springBootAutoConfigure
   implementation libraries.springDataRedis
-  implementation libraries.lombok
-
+  
+  compileOnly libraries.lombok
   annotationProcessor libraries.lombok
+  
   annotationProcessor libraries.springBootConfigurationProcessor
 
   testImplementation libraries.springBootTest

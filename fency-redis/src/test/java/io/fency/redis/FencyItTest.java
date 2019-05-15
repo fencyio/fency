@@ -40,11 +40,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 
-import io.fency.IdempotencyAutoConfiguration;
+import io.fency.FencyAutoConfiguration;
 import io.fency.IdempotencyTestUtils;
+import io.fency.IdempotentMessageService;
 import io.fency.Message;
 import io.fency.MessageListener;
-import io.fency.MessageService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,11 +59,11 @@ import static org.awaitility.Awaitility.await;
  * @author Gilles Robert
  */
 @EnableAutoConfiguration
-@SpringBootTest(classes = {RedisAutoConfiguration.class, IdempotencyAutoConfiguration.class,
-    IdempotencyMessagingItTest.TestConfig.class})
-@ContextConfiguration(initializers = IdempotencyMessagingItTest.Initializer.class)
+@SpringBootTest(classes = {FencyRedisConfiguration.class, FencyAutoConfiguration.class,
+    FencyItTest.TestConfig.class})
+@ContextConfiguration(initializers = FencyItTest.Initializer.class)
 @Testcontainers
-class IdempotencyMessagingItTest {
+class FencyItTest {
 
   private static final int RABBIT_MQ_PORT = 5672;
   private static final int REDIS_PORT = 6379;
@@ -79,7 +79,7 @@ class IdempotencyMessagingItTest {
   @Autowired
   private RedisConnectionFactory factory;
   @Autowired
-  private MessageService messageService;
+  private IdempotentMessageService idempotentMessageService;
   @Autowired
   private RabbitTemplate rabbitTemplate;
   @Autowired
@@ -97,10 +97,10 @@ class IdempotencyMessagingItTest {
     Message message = IdempotencyTestUtils.createIdempotentMessage();
 
     // when
-    messageService.save(message);
+    idempotentMessageService.save(message);
 
     // then
-    assertThat(messageService.find(message.getId(), message.getConsumerQueueName())).isNotNull();
+    assertThat(idempotentMessageService.find(message.getId(), message.getConsumerQueueName())).isNotNull();
   }
 
   @Test

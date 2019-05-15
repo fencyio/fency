@@ -27,14 +27,14 @@ import lombok.RequiredArgsConstructor;
  */
 @EnableScheduling
 @RequiredArgsConstructor
-public class IdempotencySchedulerConfiguration implements SchedulingConfigurer {
+public class FencySchedulerConfiguration implements SchedulingConfigurer {
 
-  private final IdempotencyProperties properties;
-  private final MessageService messageService;
+  private final FencyProperties properties;
+  private final IdempotentMessageService idempotentMessageService;
 
   @Override
   public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-    CronTask task = new CronTask(messageService::clean, properties.getCleanupCron());
+    CronTask task = new CronTask(idempotentMessageService::clean, properties.getCleanupCron());
     taskRegistrar.addCronTask(task);
   }
 }

@@ -16,48 +16,42 @@
 package io.fency;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import io.fency.redis.RedisAutoConfiguration;
+import io.fency.redis.FencyRedisConfiguration;
 
 /**
  * @author Gilles Robert
  */
 @Configuration
-@Import({RedisAutoConfiguration.class, IdempotencySchedulerConfiguration.class})
-@EnableConfigurationProperties(IdempotencyProperties.class)
+@Import({FencyRedisConfiguration.class, FencySchedulerConfiguration.class})
+@EnableConfigurationProperties(FencyProperties.class)
 @EnableTransactionManagement
-@AutoConfigureAfter(RedisAutoConfiguration.class)
-public class IdempotencyAutoConfiguration {
+@AutoConfigureAfter(FencyRedisConfiguration.class)
+public class FencyAutoConfiguration {
 
   @Bean
-  public ContextService contextService() {
-    return new ContextService();
+  public IdempotentMessageContextService contextService() {
+    return new IdempotentMessageContextService();
   }
 
   @Bean
-  public MessageInterceptor messageInterceptor(ContextService contextService) {
-    return new MessageInterceptor(contextService);
+  public MessageInterceptor messageInterceptor(IdempotentMessageContextService idempotentMessageContextService) {
+    return new MessageInterceptor(idempotentMessageContextService);
   }
 
   @Bean
-  public IdempotencyBarrier idempotencyBarrier(ContextService contextService, MessageService messageService) {
-    return new IdempotencyBarrier(contextService, messageService);
+  public IdempotencyBarrier idempotencyBarrier(IdempotentMessageContextService idempotentMessageContextService,
+                                               IdempotentMessageService idempotentMessageService) {
+    return new IdempotencyBarrier(idempotentMessageContextService, idempotentMessageService);
   }
 
   @Bean
   public RabbitMqBeanPostProcessor rabbitMqBeanPostProcessor(MessageInterceptor interceptor) {
     return new RabbitMqBeanPostProcessor(interceptor);
-  }
-
-  @ConditionalOnMissingBean(MessageService.class)
-  @Bean
-  public MessageService messageService() {
-    return new NoOpMessageService();
   }
 }

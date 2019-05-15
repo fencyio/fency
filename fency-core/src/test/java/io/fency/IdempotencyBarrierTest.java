@@ -37,9 +37,9 @@ import static org.mockito.Mockito.verify;
 class IdempotencyBarrierTest {
 
   @Mock
-  private ContextService mContextService;
+  private IdempotentMessageContextService mIdempotentMessageContextService;
   @Mock
-  private MessageService mMessageService;
+  private IdempotentMessageService mIdempotentMessageService;
   @InjectMocks
   private IdempotencyBarrier aspect;
 
@@ -48,18 +48,18 @@ class IdempotencyBarrierTest {
     // given
     ProceedingJoinPoint mProceedingJoinPoint = mock(ProceedingJoinPoint.class);
     MessageContext messageContext = IdempotencyTestUtils.createIdempotentContext();
-    given(mContextService.get()).willReturn(messageContext);
+    given(mIdempotentMessageContextService.get()).willReturn(messageContext);
 
-    given(mMessageService.find(messageContext.getMessageId(), messageContext.getConsumerQueueName()))
+    given(mIdempotentMessageService.find(messageContext.getMessageId(), messageContext.getConsumerQueueName()))
         .willReturn(Optional.empty());
 
     // when
     aspect.execute(mProceedingJoinPoint);
 
     // then
-    verify(mMessageService).find(messageContext.getMessageId(), messageContext.getConsumerQueueName());
+    verify(mIdempotentMessageService).find(messageContext.getMessageId(), messageContext.getConsumerQueueName());
     verify(mProceedingJoinPoint).proceed();
-    verify(mMessageService).save(any(Message.class));
+    verify(mIdempotentMessageService).save(any(Message.class));
   }
 
   @Test
@@ -68,16 +68,16 @@ class IdempotencyBarrierTest {
     ProceedingJoinPoint mProceedingJoinPoint = mock(ProceedingJoinPoint.class);
     MessageContext messageContext = IdempotencyTestUtils.createIdempotentContext();
     Message message = IdempotencyTestUtils.createIdempotentMessage();
-    given(mContextService.get()).willReturn(messageContext);
+    given(mIdempotentMessageContextService.get()).willReturn(messageContext);
 
-    given(mMessageService.find(messageContext.getMessageId(), messageContext.getConsumerQueueName()))
+    given(mIdempotentMessageService.find(messageContext.getMessageId(), messageContext.getConsumerQueueName()))
         .willReturn(Optional.of(message));
 
     // when
     aspect.execute(mProceedingJoinPoint);
 
     // then
-    verify(mMessageService).find(messageContext.getMessageId(), messageContext.getConsumerQueueName());
+    verify(mIdempotentMessageService).find(messageContext.getMessageId(), messageContext.getConsumerQueueName());
     verify(mProceedingJoinPoint, never()).proceed();
   }
 }

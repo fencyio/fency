@@ -30,7 +30,7 @@ import org.aopalliance.intercept.MethodInvocation;
 @RequiredArgsConstructor
 class MessageInterceptor implements MethodInterceptor {
 
-  private final ContextService contextService;
+  private final IdempotentMessageContextService idempotentMessageContextService;
 
   // CHECKSTYLE:OFF throwable implied by MethodInterceptor
   @Override
@@ -40,8 +40,8 @@ class MessageInterceptor implements MethodInterceptor {
 
     MessageContext messageContext = new MessageContext(messageProperties);
 
-    contextService.clear();
-    contextService.set(messageContext);
+    idempotentMessageContextService.clear();
+    idempotentMessageContextService.set(messageContext);
 
     return invocation.proceed();
   }

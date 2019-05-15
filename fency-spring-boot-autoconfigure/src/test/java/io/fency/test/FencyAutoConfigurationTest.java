@@ -15,9 +15,10 @@
  */
 package io.fency.test;
 
+import org.springframework.aop.framework.Advised;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
-import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,10 +26,11 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import io.fency.IdempotencyAutoConfiguration;
-import io.fency.IdempotencyProperties;
-import io.fency.MessageService;
-import io.fency.NoOpMessageService;
+import io.fency.FencyAutoConfiguration;
+import io.fency.FencyProperties;
+import io.fency.IdempotentMessageService;
+import io.fency.redis.FencyRedisConfiguration;
+import io.fency.redis.RedisIdempotentMessageService;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,19 +38,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Gilles Robert
  */
-class IdempotencyAutoConfigurationTest {
+class FencyAutoConfigurationTest {
 
   private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-      .withConfiguration(AutoConfigurations.of(IdempotencyAutoConfiguration.class, RedisAutoConfiguration.class));
+      .withConfiguration(AutoConfigurations
+          .of(FencyAutoConfiguration.class, FencyRedisConfiguration.class,
+              RedisAutoConfiguration.class));
 
   @Test
-  void testMessageService() {
-    this.contextRunner.run((context) -> assertThat(context).hasSingleBean(MessageService.class));
+  void testIdempotentMessageService() {
+    this.contextRunner.run((context) -> {
+      assertThat(context).hasSingleBean(IdempotentMessageService.class);
+
+      assertThat(context).hasSingleBean(IdempotentMessageService.class);
+      IdempotentMessageService idempotentMessageService = (context).getBean(IdempotentMessageService.class);
+      Object targetObject = getTargetObject(idempotentMessageService);
+      assertThat(targetObject)
+          .isInstanceOf(RedisIdempotentMessageService.class);
+    });
   }
 
   @Test
   void testPicksUserRedisConnectionFactory() {
-    this.contextRunner.withUserConfiguration(UserConfiguration.class)
+    this.contextRunner
+        .withUserConfiguration(UserConfiguration.class)
         .run((context) -> {
           assertThat(context).hasSingleBean(RedisConnectionFactory.class);
           assertThat(context.getBean(RedisConnectionFactory.class)).isSameAs(
@@ -59,19 +72,10 @@ class IdempotencyAutoConfigurationTest {
   @Test
   void testUserProvidedCronCleanup() { // NOPMD
     String cronExpression = "5 * * * * *";
-    this.contextRunner.withPropertyValues("idempotency.cleanup-cron=" + cronExpression)
+    this.contextRunner.withPropertyValues("fency.cleanup-cron=" + cronExpression)
         .run((context) -> {
-          IdempotencyProperties properties = context.getBean(IdempotencyProperties.class);
+          FencyProperties properties = context.getBean(FencyProperties.class);
           assertThat(properties.getCleanupCron()).isEqualTo(cronExpression);
-        });
-  }
-
-  @Test
-  void testRedisClassNotOnTheClassPath() {
-    this.contextRunner
-        .withClassLoader(new FilteredClassLoader(RedisConnectionFactory.class))
-        .run((context) -> {
-          assertThat(context.getBean(MessageService.class)).isInstanceOf(NoOpMessageService.class);
         });
   }
 
@@ -89,5 +93,17 @@ class IdempotencyAutoConfigurationTest {
       redisTemplate.setConnectionFactory(factory);
       return redisTemplate;
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> T getTargetObject(Object candidate) {
+    try {
+      if (AopUtils.isAopProxy(candidate) && (candidate instanceof Advised)) {
+        return (T) ((Advised) candidate).getTargetSource().getTarget();
+      }
+    } catch (Exception ex) {
+      throw new IllegalStateException("Failed to unwrap proxied object", ex);
+    }
+    return (T) candidate;
   }
 }

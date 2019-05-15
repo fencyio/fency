@@ -20,20 +20,23 @@ import java.util.Optional;
 /**
  * @author Gilles Robert
  */
-public class NoOpMessageService implements MessageService {
+public interface IdempotentMessageService {
 
-  @Override
-  public void save(Message message) {
-    //NOOP
-  }
+  /**
+   * Save a Message metadata in a data store.
+   * @param message The message to save.
+   */
+  void save(Message message);
 
-  @Override
-  public Optional<Message> find(String messageId, String consumerQueueName) {
-    return Optional.empty();
-  }
+  /**
+   * Retrieve a Message metadata in a data store.
+   * @param messageId The message id.
+   * @param consumerQueueName The target consumer queue name.
+   */
+  Optional<Message> find(String messageId, String consumerQueueName);
 
-  @Override
-  public void clean() {
-    //NOOP
-  }
+  /**
+   * Clean the message metadata in a data store.
+   */
+  void clean();
 }

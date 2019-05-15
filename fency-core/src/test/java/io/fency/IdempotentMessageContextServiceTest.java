@@ -30,14 +30,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * @author Gilles Robert
  */
 @ExtendWith(MockitoExtension.class)
-class ContextServiceTest {
+class IdempotentMessageContextServiceTest {
 
   @InjectMocks
-  private ContextService contextService;
+  private IdempotentMessageContextService idempotentMessageContextService;
 
   @AfterEach
   void tearDown() {
-    contextService.clear();
+    idempotentMessageContextService.clear();
   }
 
   @Test
@@ -45,7 +45,7 @@ class ContextServiceTest {
     // given no initialization
 
     // when
-    MessageContext context = contextService.get();
+    MessageContext context = idempotentMessageContextService.get();
 
     // then
     assertThat(context, nullValue());
@@ -57,10 +57,10 @@ class ContextServiceTest {
     MessageContext expectedContext = IdempotencyTestUtils.createIdempotentContext();
 
     // when
-    contextService.set(expectedContext);
+    idempotentMessageContextService.set(expectedContext);
 
     // then
-    MessageContext actualContext = contextService.get();
+    MessageContext actualContext = idempotentMessageContextService.get();
     assertThat(actualContext, sameInstance(expectedContext));
   }
 
@@ -69,10 +69,10 @@ class ContextServiceTest {
     // given
 
     // when
-    contextService.clear();
+    idempotentMessageContextService.clear();
 
     // then
-    MessageContext context = contextService.get();
+    MessageContext context = idempotentMessageContextService.get();
     assertThat(context, nullValue());
   }
 
@@ -80,9 +80,9 @@ class ContextServiceTest {
   void testSetWhenNotEmpty() {
     // given no initialization
     MessageContext expectedContext = IdempotencyTestUtils.createIdempotentContext();
-    contextService.set(expectedContext);
+    idempotentMessageContextService.set(expectedContext);
 
     // when / then
-    assertThrows(IllegalArgumentException.class, () -> contextService.set(expectedContext));
+    assertThrows(IllegalArgumentException.class, () -> idempotentMessageContextService.set(expectedContext));
   }
 }

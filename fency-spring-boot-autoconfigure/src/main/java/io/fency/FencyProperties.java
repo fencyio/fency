@@ -23,10 +23,10 @@ import lombok.Setter;
 /**
  * @author Gilles Robert
  */
-@ConfigurationProperties(prefix = "idempotency")
+@ConfigurationProperties(prefix = "fency")
 @Getter
 @Setter
-public class IdempotencyProperties {
+public class FencyProperties {
 
   /**
    * Cron expression used to trigger the cleanup of stored messages metadata.

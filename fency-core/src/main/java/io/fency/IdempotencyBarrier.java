@@ -27,7 +27,7 @@ import org.aspectj.lang.annotation.Aspect;
 
 /**
  * Aspect on {@link IdempotentConsumer}.
- * Retrieves a {@link MessageContext} and uses a MessageService to verify if the message
+ * Retrieves a {@link MessageContext} and uses a IdempotentMessageService to verify if the message
  * metadata are already in the data store. Ignore the message if it's the case and store its metadata otherwise.
  *
  * @author Gilles Robert
@@ -38,16 +38,16 @@ import org.aspectj.lang.annotation.Aspect;
 @RequiredArgsConstructor
 class IdempotencyBarrier {
 
-  private final ContextService contextService;
-  private final MessageService messageService;
+  private final IdempotentMessageContextService idempotentMessageContextService;
+  private final IdempotentMessageService idempotentMessageService;
 
   // CHECKSTYLE:OFF throwable for ProceedingJoinPoint
   @Around("@within(io.fency.IdempotentConsumer)")
   public synchronized Object execute(ProceedingJoinPoint pjp) throws Throwable {
     Object proceed = null;
-    MessageContext context = contextService.get();
+    MessageContext context = idempotentMessageContextService.get();
 
-    Optional<Message> message = messageService.find(context.getMessageId(), context.getConsumerQueueName());
+    Optional<Message> message = idempotentMessageService.find(context.getMessageId(), context.getConsumerQueueName());
 
     if (message.isPresent()) {
       logError(context);
@@ -59,7 +59,7 @@ class IdempotencyBarrier {
       proceed = pjp.proceed();
 
       Message newMessage = new Message(context);
-      messageService.save(newMessage);
+      idempotentMessageService.save(newMessage);
     }
 
     return proceed;

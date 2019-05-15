@@ -3,8 +3,8 @@ group 'io.fency'
 dependencies {
   implementation project(':fency-core')
   implementation libraries.springDataRedis
-  implementation libraries.lombok
-
+  
+  compileOnly libraries.lombok
   annotationProcessor libraries.lombok
 
   testImplementation project(':fency-test')

@@ -42,12 +42,12 @@ import static org.mockito.Mockito.verify;
  * @author Gilles Robert
  */
 @ExtendWith(MockitoExtension.class)
-class RedisMessageServiceTest {
+class RedisIdempotentMessageServiceTest {
 
   @Mock
   private RedisTemplate<String, Message> mRedisTemplate;
   @InjectMocks
-  private RedisMessageService idempotentMessageService;
+  private RedisIdempotentMessageService idempotentMessageService;
 
   @SuppressWarnings("unchecked")
   @Test

@@ -50,7 +50,7 @@ class MessageInterceptorTest {
   @InjectMocks
   private MessageInterceptor interceptor;
   @Mock
-  private ContextService mContextService;
+  private IdempotentMessageContextService mIdempotentMessageContextService;
 
   @Test
   void testInvoke() throws Throwable {
@@ -61,11 +61,11 @@ class MessageInterceptorTest {
     interceptor.invoke(invocation);
 
     // then
-    verify(mContextService).clear();
+    verify(mIdempotentMessageContextService).clear();
 
     ArgumentCaptor<MessageContext> idempotentContextArgumentCaptor =
         ArgumentCaptor.forClass(MessageContext.class);
-    verify(mContextService).set(idempotentContextArgumentCaptor.capture());
+    verify(mIdempotentMessageContextService).set(idempotentContextArgumentCaptor.capture());
 
     MessageContext messageContext = idempotentContextArgumentCaptor.getValue();
     assertThat(messageContext, notNullValue());

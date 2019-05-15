@@ -4,11 +4,11 @@ dependencies {
   compile libraries.aspectjweaver
   implementation libraries.springBootStarterAmqp
   implementation libraries.springBootStarterJson
-  
-  implementation libraries.lombok
-  compile libraries.jacksonDataBind
 
+  compileOnly libraries.lombok
   annotationProcessor libraries.lombok
+  
+  compile libraries.jacksonDataBind
   
   testImplementation project(':fency-test')
 
@@ -18,9 +18,6 @@ dependencies {
   testImplementation libraries.junitJupiterEngine
   testImplementation libraries.mockitoCore
   testImplementation libraries.mockitoJunitJupiter
-  testImplementation libraries.postgresJdbc
-  testImplementation libraries.hikariCP
   testImplementation libraries.testContainers
-  testImplementation libraries.testContainersPostgres
   testImplementation libraries.awaitility
 }

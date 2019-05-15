@@ -22,7 +22,7 @@ import org.springframework.util.Assert;
  *
  * @author Gilles Robert
  */
-class ContextService {
+class IdempotentMessageContextService {
 
   private static final ThreadLocal<MessageContext> CONTEXT = new ThreadLocal<>();
 

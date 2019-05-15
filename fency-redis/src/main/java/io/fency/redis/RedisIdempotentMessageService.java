@@ -21,23 +21,23 @@ import java.util.Set;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.fency.IdempotentMessageService;
 import io.fency.Message;
-import io.fency.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Redis implementation of {@link MessageService}.
+ * Redis implementation of {@link IdempotentMessageService}.
  *
  * @author Gilles Robert
  */
 @Transactional
 @RequiredArgsConstructor
 @Slf4j
-public class RedisMessageService implements MessageService {
+public class RedisIdempotentMessageService implements IdempotentMessageService {
 
   private static final String PREFIX = "message";
-  private final RedisTemplate<String, Message> redisTemplate;
+  private final RedisTemplate<String, Message> fencyRedisTemplate;
 
   /**
    * Save a Message metadata in a data store.
@@ -49,7 +49,7 @@ public class RedisMessageService implements MessageService {
     log.debug("Saving metadata for message with id {} and consumer queue name {}", message.getId(),
         message.getConsumerQueueName());
     String key = getKey(message.getId(), message.getConsumerQueueName());
-    redisTemplate.opsForValue().set(key, message);
+    fencyRedisTemplate.opsForValue().set(key, message);
   }
 
   /**
@@ -62,7 +62,7 @@ public class RedisMessageService implements MessageService {
   public Optional<Message> find(String messageId, String consumerQueueName) {
     log.debug("Retrieving metadata for message with id {} and consumer queue name {}", messageId, consumerQueueName);
     String key = getKey(messageId, consumerQueueName);
-    return Optional.ofNullable(redisTemplate.opsForValue().get(key));
+    return Optional.ofNullable(fencyRedisTemplate.opsForValue().get(key));
   }
 
   /**
@@ -71,8 +71,8 @@ public class RedisMessageService implements MessageService {
   @Override
   public void clean() {
     log.debug("Cleaning up messages metadata stored in Redis...");
-    Set<String> keys = redisTemplate.keys(PREFIX + "*");
-    redisTemplate.delete(keys);
+    Set<String> keys = fencyRedisTemplate.keys(PREFIX + "*");
+    fencyRedisTemplate.delete(keys);
     log.debug("{} messages deleted.", keys.size());
   }
 
