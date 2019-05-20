@@ -1,13 +1,11 @@
 group 'io.fency'
 
-import com.github.spotbugs.SpotBugsTask
-import org.springframework.boot.gradle.plugin.SpringBootPlugin
+import com.github.spotbugs.SpotBugsTask 
 
 apply from: "${rootDir}/libraries.gradle"
 
 buildscript {
   ext {
-    springBootVersion = '2.1.4.RELEASE'
     spotbugsVersion = '1.7.1'
     releasePluginVersion = '1.10.0'
   }
@@ -23,7 +21,6 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
     classpath "gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:${spotbugsVersion}"
     classpath "pl.allegro.tech.build:axion-release-plugin:${releasePluginVersion}"
   }
@@ -46,7 +43,6 @@ subprojects {
   
   apply plugin: 'java'
   apply plugin: 'idea'
-  apply plugin: 'io.spring.dependency-management'
   apply plugin: 'jacoco'
   apply plugin: 'com.github.spotbugs'
   apply plugin: 'signing'
@@ -54,11 +50,9 @@ subprojects {
  
   apply from: "${rootDir}/publishing.gradle"
 
-  dependencyManagement {
-    imports {
-      mavenBom SpringBootPlugin.BOM_COORDINATES
-    }
-  }
+  def platform = project.dependencies.platform("org.springframework.boot:spring-boot-dependencies:2.1.5.RELEASE")
+  project.dependencies.add("implementation", platform)
+  project.dependencies.add("annotationProcessor", platform)
 
   tasks.withType(JavaCompile) {
     sourceCompatibility = "1.8"
