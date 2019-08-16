@@ -50,7 +50,7 @@ subprojects {
  
   apply from: "${rootDir}/publishing.gradle"
 
-  def platform = project.dependencies.platform("org.springframework.boot:spring-boot-dependencies:2.1.5.RELEASE")
+  def platform = project.dependencies.platform("org.springframework.boot:spring-boot-dependencies:2.1.7.RELEASE")
   project.dependencies.add("implementation", platform)
   project.dependencies.add("annotationProcessor", platform)
 
