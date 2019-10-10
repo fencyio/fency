@@ -1,5 +1,5 @@
 ext {
-  awaitilityVersion = '3.1.6'
+  awaitilityVersion = '4.0.1'
   testContainersVersion = '1.12.2'
 
   //noinspection GroovyAssignabilityCheck
