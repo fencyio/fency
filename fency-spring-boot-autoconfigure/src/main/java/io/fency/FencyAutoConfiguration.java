@@ -27,7 +27,7 @@ import io.fency.redis.FencyRedisConfiguration;
 /**
  * @author Gilles Robert
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @Import({FencyRedisConfiguration.class, FencySchedulerConfiguration.class})
 @EnableConfigurationProperties(FencyProperties.class)
 @EnableTransactionManagement
