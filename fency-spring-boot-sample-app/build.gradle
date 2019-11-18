@@ -1,6 +1,6 @@
 group 'io.fency'
 
 dependencies {
-  implementation 'io.fency:fency-spring-boot-starter-redis:+'
+  implementation 'io.fency:fency-spring-boot-starter-redis:0.1.2'
   implementation 'org.springframework.boot:spring-boot-starter-amqp'
 }

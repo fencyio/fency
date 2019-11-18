@@ -6,7 +6,7 @@ apply from: "${rootDir}/libraries.gradle"
 
 buildscript {
   ext {
-    spotbugsVersion = '1.7.1'
+    spotbugsVersion = '2.0.1'
     releasePluginVersion = '1.10.0'
   }
 
@@ -21,7 +21,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:${spotbugsVersion}"
+    classpath "com.github.spotbugs:spotbugs-gradle-plugin:${spotbugsVersion}"
     classpath "pl.allegro.tech.build:axion-release-plugin:${releasePluginVersion}"
   }
 }
